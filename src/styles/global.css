@@ -95,7 +95,7 @@ a:hover {
 .page-title {
   margin: 0;
   color: var(--text);
-  font-size: clamp(2rem, 8vw, 3.75rem);
+  font-size: 2.25rem;
   line-height: 1.05;
   letter-spacing: 0;
 }
@@ -104,7 +104,7 @@ a:hover {
   max-width: 62ch;
   margin: 1rem 0 0;
   color: var(--muted);
-  font-size: clamp(1.1rem, 3vw, 1.35rem);
+  font-size: 1.125rem;
   line-height: 1.55;
 }
 
@@ -142,7 +142,7 @@ a:hover {
 .article-item h2,
 .article-item h3 {
   margin: 0 0 0.35rem;
-  font-size: clamp(1.3rem, 4vw, 1.75rem);
+  font-size: 1.35rem;
   line-height: 1.2;
   letter-spacing: 0;
 }
@@ -249,6 +249,36 @@ a:hover {
 
 .site-footer__inner {
   padding-block: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .page-title {
+    font-size: 3.25rem;
+  }
+
+  .lede {
+    font-size: 1.25rem;
+  }
+
+  .article-item h2,
+  .article-item h3 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .page-title {
+    font-size: 3.75rem;
+  }
+
+  .lede {
+    font-size: 1.35rem;
+  }
+
+  .article-item h2,
+  .article-item h3 {
+    font-size: 1.75rem;
+  }
 }
 
 @media (max-width: 560px) {
