@@ -1,12 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { formatArticleDate, formatArticleType } from "../lib/format";
 import { getAllArticles } from "../lib/posts";
 
 const articles = (await getAllArticles()).slice(0, 5);
-const formattedDate = new Intl.DateTimeFormat("en", {
-  dateStyle: "medium",
-});
-const formatType = (type: string) => (type === "html" ? "HTML" : "Markdown");
 ---
 
 <BaseLayout title="Your Name | Personal Blog">
@@ -38,9 +35,9 @@ const formatType = (type: string) => (type === "html" ? "HTML" : "Markdown");
             </h3>
             <p class="article-meta">
               <time datetime={article.date.toISOString()}>
-                {formattedDate.format(article.date)}
+                {formatArticleDate(article.date)}
               </time>
-              <span>{formatType(article.type)}</span>
+              <span>{formatArticleType(article.type)}</span>
             </p>
             <p>{article.summary}</p>
           </li>

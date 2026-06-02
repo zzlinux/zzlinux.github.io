@@ -7,4 +7,6 @@ summary: "A short first note to verify the blog writing workflow."
 
 This is the first Markdown article in the blog.
 
-Use this file as a reference when adding new notes. The title, date, tags, and summary above are used automatically by the article list.
+It marks the start of a small space for notes from real projects: what worked,
+what surprised me, and what I want to remember the next time the same problem
+shows up wearing a different hat.

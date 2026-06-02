@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
+import { formatArticleDate } from "../lib/format";
 
 interface Props {
   title: string;
@@ -9,9 +10,7 @@ interface Props {
 }
 
 const { title, date, tags, summary } = Astro.props;
-const formattedDate = new Intl.DateTimeFormat("en", {
-  dateStyle: "medium",
-}).format(date);
+const formattedDate = formatArticleDate(date);
 ---
 
 <BaseLayout title={`${title} | Your Name`} description={summary}>

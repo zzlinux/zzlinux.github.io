@@ -1,12 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { formatArticleDate, formatArticleType } from "../../lib/format";
 import { getAllArticles } from "../../lib/posts";
 
 const articles = await getAllArticles();
-const formattedDate = new Intl.DateTimeFormat("en", {
-  dateStyle: "medium",
-});
-const formatType = (type: string) => (type === "html" ? "HTML" : "Markdown");
 ---
 
 <BaseLayout title="Articles | Your Name">
@@ -19,14 +16,14 @@ const formatType = (type: string) => (type === "html" ? "HTML" : "Markdown");
       {
         articles.map((article) => (
           <li class="article-item">
-            <h2>
+            <h3>
               <a href={article.href}>{article.title}</a>
-            </h2>
+            </h3>
             <p class="article-meta">
               <time datetime={article.date.toISOString()}>
-                {formattedDate.format(article.date)}
+                {formatArticleDate(article.date)}
               </time>
-              <span>{formatType(article.type)}</span>
+              <span>{formatArticleType(article.type)}</span>
             </p>
             <p>{article.summary}</p>
             {
