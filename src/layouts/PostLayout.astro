@@ -1,0 +1,39 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  title: string;
+  date: Date;
+  tags: string[];
+  summary: string;
+}
+
+const { title, date, tags, summary } = Astro.props;
+const formattedDate = new Intl.DateTimeFormat("en", {
+  dateStyle: "medium",
+}).format(date);
+---
+
+<BaseLayout title={`${title} | Your Name`} description={summary}>
+  <article>
+    <a class="back-link" href="/articles/">Back to articles</a>
+    <header>
+      <h1 class="page-title">{title}</h1>
+      <p class="article-meta">
+        <time datetime={date.toISOString()}>{formattedDate}</time>
+      </p>
+      {
+        tags.length > 0 && (
+          <ul class="tag-list" aria-label="Tags">
+            {tags.map((tag) => (
+              <li class="tag">{tag}</li>
+            ))}
+          </ul>
+        )
+      }
+    </header>
+    <div class="prose">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>

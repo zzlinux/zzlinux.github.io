@@ -1,0 +1,44 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = "A personal blog for notes, documents, and project writing.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-shell site-header__inner">
+        <a class="site-brand" href="/">Your Name</a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="/">Home</a>
+          <a href="/articles/">Articles</a>
+          <a href="/about/">About</a>
+          <a href="/links/">Links</a>
+        </nav>
+      </div>
+    </header>
+    <main class="site-shell site-main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell site-footer__inner">
+        Built with Astro and GitHub Pages.
+      </div>
+    </footer>
+  </body>
+</html>
