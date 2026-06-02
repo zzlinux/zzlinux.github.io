@@ -1,0 +1,24 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Links | Your Name">
+  <h1 class="page-title">Links</h1>
+  <p class="lede">
+    Profiles, contact points, and places where current work is easiest to find.
+  </p>
+
+  <section class="section" aria-labelledby="profiles-heading">
+    <h2 class="section-label" id="profiles-heading">Profiles</h2>
+    <ul class="article-list">
+      <li class="article-item">
+        <h2><a href="https://github.com/username">GitHub</a></h2>
+        <p>Code, experiments, and project notes.</p>
+      </li>
+      <li class="article-item">
+        <h2><a href="mailto:hello@example.com">hello@example.com</a></h2>
+        <p>Email for conversations, questions, and collaboration.</p>
+      </li>
+    </ul>
+  </section>
+</BaseLayout>

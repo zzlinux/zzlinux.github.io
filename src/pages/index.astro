@@ -1,0 +1,51 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getAllArticles } from "../lib/posts";
+
+const articles = (await getAllArticles()).slice(0, 5);
+const formattedDate = new Intl.DateTimeFormat("en", {
+  dateStyle: "medium",
+});
+const formatType = (type: string) => (type === "html" ? "HTML" : "Markdown");
+---
+
+<BaseLayout title="Your Name | Personal Blog">
+  <h1 class="page-title">Your Name</h1>
+  <p class="lede">
+    Notes on engineering, AI systems, research experiments, and the small
+    lessons that survive real work.
+  </p>
+
+  <section class="section" aria-labelledby="focus-heading">
+    <h2 class="section-label" id="focus-heading">Focus</h2>
+    <ul class="tag-list">
+      <li class="tag">AI systems</li>
+      <li class="tag">Evaluation</li>
+      <li class="tag">Tooling</li>
+      <li class="tag">Engineering practice</li>
+      <li class="tag">Technical writing</li>
+    </ul>
+  </section>
+
+  <section class="section" aria-labelledby="latest-heading">
+    <h2 class="section-label" id="latest-heading">Latest</h2>
+    <ul class="article-list">
+      {
+        articles.map((article) => (
+          <li class="article-item">
+            <h3>
+              <a href={article.href}>{article.title}</a>
+            </h3>
+            <p class="article-meta">
+              <time datetime={article.date.toISOString()}>
+                {formattedDate.format(article.date)}
+              </time>
+              <span>{formatType(article.type)}</span>
+            </p>
+            <p>{article.summary}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>

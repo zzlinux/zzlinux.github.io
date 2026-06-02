@@ -1,0 +1,46 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllArticles } from "../../lib/posts";
+
+const articles = await getAllArticles();
+const formattedDate = new Intl.DateTimeFormat("en", {
+  dateStyle: "medium",
+});
+const formatType = (type: string) => (type === "html" ? "HTML" : "Markdown");
+---
+
+<BaseLayout title="Articles | Your Name">
+  <h1 class="page-title">Articles</h1>
+  <p class="lede">Markdown notes and standalone HTML documents in one timeline.</p>
+
+  <section class="section" aria-labelledby="articles-heading">
+    <h2 class="section-label" id="articles-heading">All Articles</h2>
+    <ul class="article-list">
+      {
+        articles.map((article) => (
+          <li class="article-item">
+            <h2>
+              <a href={article.href}>{article.title}</a>
+            </h2>
+            <p class="article-meta">
+              <time datetime={article.date.toISOString()}>
+                {formattedDate.format(article.date)}
+              </time>
+              <span>{formatType(article.type)}</span>
+            </p>
+            <p>{article.summary}</p>
+            {
+              article.tags.length > 0 && (
+                <ul class="tag-list" aria-label={`Tags for ${article.title}`}>
+                  {article.tags.map((tag) => (
+                    <li class="tag">{tag}</li>
+                  ))}
+                </ul>
+              )
+            }
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>
