@@ -1,4 +1,5 @@
 export type IsoDateString = `${number}-${number}-${number}`;
+export type ExternalPostType = "html" | "pdf";
 
 export type ExternalPost = {
   title: string;
@@ -6,7 +7,7 @@ export type ExternalPost = {
   summary: string;
   tags: string[];
   href: string;
-  type: "html";
+  type: ExternalPostType;
 };
 
 export function parseExternalPostDate(date: IsoDateString): Date {

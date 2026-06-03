@@ -1,9 +1,12 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 
 import {
+  type ExternalPostType,
   externalPosts,
   parseExternalPostDate,
 } from "../data/externalPosts";
+
+export type ArticleType = "markdown" | ExternalPostType;
 
 export type ArticleListItem = {
   title: string;
@@ -11,7 +14,7 @@ export type ArticleListItem = {
   summary: string;
   tags: string[];
   href: string;
-  type: "markdown" | "html";
+  type: ArticleType;
 };
 
 export function markdownPostToListItem(
