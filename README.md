@@ -142,4 +142,4 @@ npm run build
 
 在 GitHub 仓库设置里，把 Pages 的发布来源设置为 GitHub Actions。
 
-当前 workflow 已经配置了收窄后的权限和 `actions/configure-pages`，本地不需要额外执行部署命令。
+当前 workflow 已经配置了收窄后的权限和 `actions/configure-pages`，本地不需要额外执行部署命令。.
