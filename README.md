@@ -46,6 +46,44 @@ summary: "文章的一句话摘要。"
 
 保存后，文章会自动出现在 `/articles/` 列表页，并且首页会自动展示最新的 5 篇内容。
 
+## 在 Markdown 中写公式
+
+Markdown 文章支持 LaTeX 公式。
+
+行内公式使用单个 `$`：
+
+```md
+策略在状态 $s$ 下选择动作 $a$。
+```
+
+独立公式块使用 `$$`：
+
+```md
+$$
+\pi_\theta(a|s)
+$$
+```
+
+复杂公式也可以写成多行：
+
+```md
+$$
+J(\theta)=\mathbb{E}_{\tau\sim\pi_\theta}[R(\tau)]
+$$
+```
+
+注意：公式块里尽量只写 LaTeX 表达式。中文说明放在公式块外面，例如：
+
+```md
+下面是 PPO 的 clip objective：
+
+$$
+L^{CLIP}(\theta)=\mathbb{E}_t[
+\min(r_t(\theta)A_t,\operatorname{clip}(r_t(\theta),1-\epsilon,1+\epsilon)A_t)
+]
+$$
+```
+
 ## 添加独立 HTML 或 PDF 文档
 
 1. 把 HTML 或 PDF 文件放到 `public/docs/`，例如 `public/docs/report.html` 或 `public/docs/report.pdf`。

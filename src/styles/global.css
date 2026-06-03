@@ -229,6 +229,22 @@ a:hover {
   padding: 0;
 }
 
+.prose .katex-display {
+  overflow: visible;
+  padding: 0.25rem 0;
+  white-space: normal;
+}
+
+.prose .katex-display > .katex {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.prose .katex-display .katex-html {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .back-link {
   display: inline-flex;
   margin-bottom: 1.5rem;
