@@ -8,6 +8,10 @@ export type ExternalPost = {
   tags: string[];
   href: string;
   type: ExternalPostType;
+  category?: string;
+  subcategory?: string;
+  pinned?: boolean;
+  pinnedRank?: number;
 };
 
 export function parseExternalPostDate(date: IsoDateString): Date {
@@ -26,5 +30,7 @@ export const externalPosts: ExternalPost[] = [
     tags: ["ai", "evaluation"],
     href: "/docs/model-eval-report.html",
     type: "html",
+    category: "模型评测",
+    subcategory: "报告",
   },
 ];

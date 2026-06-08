@@ -3,6 +3,9 @@ title: "First Note"
 date: "2026-06-02"
 tags: ["writing", "blog"]
 summary: "A short first note to verify the blog writing workflow."
+category: "杂记"
+subcategory: "Blog"
+type: "article"
 ---
 
 This is the first Markdown article in the blog.

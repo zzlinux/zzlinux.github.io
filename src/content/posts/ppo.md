@@ -1,8 +1,12 @@
 ---
 title: "通俗易懂的 PPO 算法理解"
 date: "2026-06-03"
-tags: ["强化学习"]
+tags: ["强化学习", "PPO", "RLHF"]
 summary: "沿着一条自然的逻辑链，从最原始的强化学习目标一步步推到 PPO，让每个公式都不是硬背出来的，而是“为什么必须这么做”的结果。"
+category: "强化学习"
+subcategory: "PPO"
+type: "article"
+pinned: true
 ---
 # 通俗易懂的 PPO 算法理解：从策略梯度一步步推到 PPO-Clip
 

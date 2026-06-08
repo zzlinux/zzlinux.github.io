@@ -1,0 +1,197 @@
+---
+import { formatArticleDate, formatArticleType } from "../lib/format";
+import type { ContentCategoryGroup } from "../lib/posts";
+
+interface Props {
+  groups: ContentCategoryGroup[];
+  kind: "articles" | "papers";
+}
+
+const { groups, kind } = Astro.props;
+const isPaperDirectory = kind === "papers";
+const totalItems = groups.reduce(
+  (count, group) =>
+    count + group.subcategories.reduce((sum, subcategory) => sum + subcategory.items.length, 0),
+  0,
+);
+---
+
+{
+  totalItems === 0 ? (
+    <p class="empty-state">还没有可展示的内容。新增 Markdown 后会自动出现在这里。</p>
+  ) : (
+    <div class="directory-shell is-sidebar-collapsed" data-directory>
+      <div class="directory-grid">
+        <aside class="category-sidebar" data-category-sidebar>
+          <p class="sidebar-title">目录</p>
+          <nav aria-label="Category navigation">
+            {groups.map((group, groupIndex) => (
+              <a href={`#category-${groupIndex}`}>{group.category}</a>
+            ))}
+          </nav>
+        </aside>
+
+        <div class="directory-content">
+          {groups.map((group, groupIndex) => (
+            <section class="content-group" id={`category-${groupIndex}`} aria-labelledby={`category-heading-${groupIndex}`}>
+              <header class="content-group__header">
+                <h2 id={`category-heading-${groupIndex}`}>{group.category}</h2>
+              </header>
+
+              {group.subcategories.map((subcategory, subcategoryIndex) => (
+                <section
+                  class="subcategory-group"
+                  aria-labelledby={`subcategory-heading-${groupIndex}-${subcategoryIndex}`}
+                >
+                  <h3 id={`subcategory-heading-${groupIndex}-${subcategoryIndex}`}>
+                    {subcategory.subcategory}
+                  </h3>
+                  <div class="table-wrap">
+                    <table class="content-table" data-sort-table>
+                      <thead>
+                        <tr>
+                          <th scope="col">
+                            <button type="button" data-sort="title">标题</button>
+                          </th>
+                          {isPaperDirectory && (
+                            <th scope="col">
+                              <button type="button" data-sort="meta">Meta info</button>
+                            </th>
+                          )}
+                          <th scope="col">
+                            <button type="button" data-sort="date">日期</button>
+                          </th>
+                          <th scope="col">
+                            <button type="button" data-sort="category">类目</button>
+                          </th>
+                          <th scope="col">
+                            <button type="button" data-sort="subcategory">子类目</button>
+                          </th>
+                          {isPaperDirectory && (
+                            <>
+                              <th scope="col">
+                                <button type="button" data-sort="published">发表时间</button>
+                              </th>
+                              <th scope="col">
+                                <button type="button" data-sort="venue">会议/期刊</button>
+                              </th>
+                            </>
+                          )}
+                          {!isPaperDirectory && (
+                            <th scope="col">
+                              <button type="button" data-sort="source">类型</button>
+                            </th>
+                          )}
+                          <th scope="col">标签</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subcategory.items.map((item) => {
+                          const paperMeta = item.paper;
+                          const metaInfo = [
+                            paperMeta?.authors.join(", "),
+                            paperMeta?.institutions.join(", "),
+                          ]
+                            .filter(Boolean)
+                            .join(" / ");
+
+                          return (
+                            <tr
+                              data-title={item.title}
+                              data-date={item.date.getTime()}
+                              data-category={item.category}
+                              data-subcategory={item.subcategory}
+                              data-source={item.sourceType}
+                              data-meta={metaInfo}
+                              data-published={paperMeta?.published ?? ""}
+                              data-venue={paperMeta?.venue ?? ""}
+                            >
+                              <td class="title-cell">
+                                <a href={item.href}>{item.title}</a>
+                                <p>{item.summary}</p>
+                              </td>
+                              {isPaperDirectory && <td>{metaInfo || "未填写"}</td>}
+                              <td>
+                                <time datetime={item.date.toISOString()}>
+                                  {formatArticleDate(item.date)}
+                                </time>
+                              </td>
+                              <td>{item.category}</td>
+                              <td>{item.subcategory}</td>
+                              {isPaperDirectory && (
+                                <>
+                                  <td>{paperMeta?.published ?? "未填写"}</td>
+                                  <td>{paperMeta?.venue ?? "未填写"}</td>
+                                </>
+                              )}
+                              {!isPaperDirectory && <td>{formatArticleType(item.sourceType)}</td>}
+                              <td>{item.tags.join(", ") || "无"}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              ))}
+            </section>
+          ))}
+        </div>
+      </div>
+      <button class="floating-toggle-button directory-sidebar-toggle-button" type="button" data-sidebar-toggle>
+        打开目录
+      </button>
+    </div>
+  )
+}
+
+<script is:inline>
+  document.querySelectorAll("[data-directory]").forEach((directory) => {
+    const toggles = directory.querySelectorAll("[data-sidebar-toggle]");
+    const syncToggles = () => {
+      const collapsed = directory.classList.contains("is-sidebar-collapsed");
+      document.body.classList.toggle("is-directory-sidebar-collapsed", collapsed);
+      toggles.forEach((toggle) => {
+        toggle.textContent = collapsed ? "打开目录" : "隐藏目录";
+      });
+    };
+
+    syncToggles();
+    toggles.forEach((toggle) => toggle.addEventListener("click", () => {
+      const collapsed = directory.classList.toggle("is-sidebar-collapsed");
+      document.body.classList.toggle("is-directory-sidebar-collapsed", collapsed);
+      syncToggles();
+    }));
+
+    directory.querySelectorAll("[data-sort-table]").forEach((table) => {
+      table.querySelectorAll("thead button[data-sort]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const key = button.getAttribute("data-sort");
+          const tbody = table.querySelector("tbody");
+          if (!key || !tbody) return;
+
+          const previousKey = table.getAttribute("data-sort-key");
+          const previousDirection = table.getAttribute("data-sort-direction") || "desc";
+          const direction = previousKey === key && previousDirection === "asc" ? "desc" : "asc";
+          const multiplier = direction === "asc" ? 1 : -1;
+
+          const rows = Array.from(tbody.querySelectorAll("tr"));
+          rows.sort((rowA, rowB) => {
+            const a = rowA.getAttribute(`data-${key}`) || "";
+            const b = rowB.getAttribute(`data-${key}`) || "";
+
+            if (key === "date") {
+              return (Number(a) - Number(b)) * multiplier;
+            }
+
+            return a.localeCompare(b, "zh-Hans-CN") * multiplier;
+          });
+
+          rows.forEach((row) => tbody.append(row));
+          table.setAttribute("data-sort-key", key);
+          table.setAttribute("data-sort-direction", direction);
+        });
+      });
+    });
+  });
+</script>

@@ -5,7 +5,7 @@ import PostLayout from "../../layouts/PostLayout.astro";
 import { getMarkdownToc } from "../../lib/toc";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("posts", (post) => post.data.type === "article");
+  const posts = await getCollection("posts", (post) => post.data.type === "paper");
 
   return posts.map((post) => ({
     params: { slug: post.slug },
@@ -23,7 +23,7 @@ const tocHeadings = getMarkdownToc(post.body);
   date={post.data.date}
   tags={post.data.tags}
   summary={post.data.summary}
-  contentType="article"
+  contentType="paper"
   tocHeadings={tocHeadings}
 >
   <Content />

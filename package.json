@@ -11,13 +11,14 @@
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "astro": "^5.0.0",
+    "github-slugger": "^2.0.0",
     "katex": "^0.17.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
     "typescript": "^5.6.0"
   },
   "optionalDependencies": {
-    "@rollup/rollup-darwin-x64": "^4.0.0",
-    "@rollup/rollup-darwin-arm64": "^4.0.0"
+    "@rollup/rollup-darwin-arm64": "^4.0.0",
+    "@rollup/rollup-darwin-x64": "^4.0.0"
   }
 }

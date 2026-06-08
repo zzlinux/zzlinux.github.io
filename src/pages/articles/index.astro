@@ -1,43 +1,18 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { formatArticleDate, formatArticleType } from "../../lib/format";
-import { getAllArticles } from "../../lib/posts";
+import ContentDirectory from "../../components/ContentDirectory.astro";
+import { getAllArticles, groupContentByCategory } from "../../lib/posts";
 
 const articles = await getAllArticles();
+const groups = groupContentByCategory(articles);
 ---
 
-<BaseLayout title="Articles | Your Name">
+<BaseLayout title="Articles | zzlinux">
   <h1 class="page-title">Articles</h1>
-  <p class="lede">Markdown notes and standalone HTML documents in one timeline.</p>
+  <p class="lede">按 category 和 subcategory 自动汇总 Markdown、HTML、PDF 文档。</p>
 
   <section class="section" aria-labelledby="articles-heading">
     <h2 class="section-label" id="articles-heading">All Articles</h2>
-    <ul class="article-list">
-      {
-        articles.map((article) => (
-          <li class="article-item">
-            <h3>
-              <a href={article.href}>{article.title}</a>
-            </h3>
-            <p class="article-meta">
-              <time datetime={article.date.toISOString()}>
-                {formatArticleDate(article.date)}
-              </time>
-              <span>{formatArticleType(article.type)}</span>
-            </p>
-            <p>{article.summary}</p>
-            {
-              article.tags.length > 0 && (
-                <ul class="tag-list" aria-label={`Tags for ${article.title}`}>
-                  {article.tags.map((tag) => (
-                    <li class="tag">{tag}</li>
-                  ))}
-                </ul>
-              )
-            }
-          </li>
-        ))
-      }
-    </ul>
+    <ContentDirectory groups={groups} kind="articles" />
   </section>
 </BaseLayout>

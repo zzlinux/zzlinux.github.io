@@ -1,38 +1,106 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
 import { formatArticleDate } from "../lib/format";
+import type { ContentType } from "../lib/posts";
+import type { TocHeading } from "../lib/toc";
 
 interface Props {
   title: string;
   date: Date;
   tags: string[];
   summary: string;
+  contentType?: ContentType;
+  tocHeadings?: TocHeading[];
 }
 
-const { title, date, tags, summary } = Astro.props;
+const {
+  title,
+  date,
+  tags,
+  summary,
+  contentType = "article",
+  tocHeadings = [],
+} = Astro.props;
 const formattedDate = formatArticleDate(date);
+const backHref = contentType === "paper" ? "/papers/" : "/articles/";
+const backLabel = contentType === "paper" ? "返回论文表格" : "返回文章表格";
 ---
 
-<BaseLayout title={`${title} | Your Name`} description={summary}>
-  <article>
-    <a class="back-link" href="/articles/">Back to articles</a>
-    <header>
-      <h1 class="page-title">{title}</h1>
-      <p class="article-meta">
-        <time datetime={date.toISOString()}>{formattedDate}</time>
-      </p>
+<BaseLayout title={`${title} | zzlinux`} description={summary}>
+  <div class="post-shell is-toc-collapsed" data-post-shell>
+    <aside class="toc-panel">
       {
-        tags.length > 0 && (
-          <ul class="tag-list" aria-label="Tags">
-            {tags.map((tag) => (
-              <li class="tag">{tag}</li>
+        tocHeadings.length > 0 && (
+          <nav class="toc-nav" aria-label="文章章节目录">
+            {tocHeadings.map((heading) => (
+              <a class={`toc-depth-${heading.depth}`} href={`#${heading.slug}`}>
+                {heading.text}
+              </a>
             ))}
-          </ul>
+          </nav>
         )
       }
-    </header>
-    <div class="prose">
-      <slot />
-    </div>
-  </article>
+    </aside>
+
+    <article class="post-content">
+      <a class="back-link" href={backHref}>{backLabel}</a>
+      <header>
+        <h1 class="page-title">{title}</h1>
+        <p class="article-meta">
+          <time datetime={date.toISOString()}>{formattedDate}</time>
+        </p>
+        {
+          tags.length > 0 && (
+            <ul class="tag-list" aria-label="Tags">
+              {tags.map((tag) => (
+                <li class="tag">{tag}</li>
+              ))}
+            </ul>
+          )
+        }
+      </header>
+      <div class="prose">
+        <slot />
+      </div>
+    </article>
+  </div>
+
+  <button class="floating-toggle-button post-toc-toggle-button" type="button" data-toc-toggle>
+    打开目录
+  </button>
+  <button class="scroll-top-button" type="button" data-scroll-top aria-label="回到顶部">
+    ↑
+  </button>
+
+  <script is:inline>
+    document.querySelectorAll("[data-post-shell]").forEach((shell) => {
+      const toggles = document.querySelectorAll("[data-toc-toggle]");
+      const syncToggles = () => {
+        const collapsed = shell.classList.contains("is-toc-collapsed");
+        document.body.classList.toggle("is-post-toc-collapsed", collapsed);
+        toggles.forEach((toggle) => {
+          toggle.textContent = collapsed ? "打开目录" : "隐藏目录";
+        });
+      };
+
+      syncToggles();
+      toggles.forEach((toggle) => toggle.addEventListener("click", () => {
+        const collapsed = shell.classList.toggle("is-toc-collapsed");
+        document.body.classList.toggle("is-post-toc-collapsed", collapsed);
+        syncToggles();
+      }));
+    });
+
+    const scrollTopButton = document.querySelector("[data-scroll-top]");
+    const updateScrollTopButton = () => {
+      if (!scrollTopButton) return;
+      scrollTopButton.hidden = window.scrollY < 360;
+    };
+
+    updateScrollTopButton();
+    window.addEventListener("scroll", updateScrollTopButton, { passive: true });
+    scrollTopButton?.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  </script>
 </BaseLayout>

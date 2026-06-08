@@ -1,9 +1,16 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { formatArticleDate, formatArticleType } from "../lib/format";
-import { getAllArticles } from "../lib/posts";
+import {
+  getAllContent,
+  getDefaultLatestItems,
+  getPinnedFallbackItems,
+} from "../lib/posts";
 
-const articles = (await getAllArticles()).slice(0, 5);
+const content = await getAllContent();
+const latestItems = [...content].sort((a, b) => b.date.getTime() - a.date.getTime());
+const defaultLatestItems = getDefaultLatestItems(content);
+const pinnedItems = getPinnedFallbackItems(content);
 ---
 
 <BaseLayout title="zzlinux | Personal Blog">
@@ -25,10 +32,10 @@ const articles = (await getAllArticles()).slice(0, 5);
 
   <section class="section" aria-labelledby="latest-heading">
     <h2 class="section-label" id="latest-heading">Latest</h2>
-    <ul class="article-list">
+    <ul class="article-list" data-latest-list>
       {
-        articles.map((article) => (
-          <li class="article-item">
+        latestItems.map((article, index) => (
+          <li class="article-item" data-latest-item hidden={index >= defaultLatestItems.length}>
             <h3>
               <a href={article.href}>{article.title}</a>
             </h3>
@@ -36,12 +43,64 @@ const articles = (await getAllArticles()).slice(0, 5);
               <time datetime={article.date.toISOString()}>
                 {formatArticleDate(article.date)}
               </time>
-              <span>{formatArticleType(article.type)}</span>
+              <span>{article.contentType === "paper" ? "Paper" : formatArticleType(article.sourceType)}</span>
+              <span>{article.category}</span>
+              <span>{article.subcategory}</span>
             </p>
             <p>{article.summary}</p>
           </li>
         ))
       }
     </ul>
+    {
+      latestItems.length > defaultLatestItems.length && (
+        <button class="load-more-button" type="button" data-load-more data-step="5">
+          再看 5 篇
+        </button>
+      )
+    }
   </section>
+
+  {
+    pinnedItems.length > 0 && (
+      <section class="section" aria-labelledby="pinned-heading">
+        <h2 class="section-label" id="pinned-heading">Pinned</h2>
+        <ul class="article-list">
+          {pinnedItems.map((article) => (
+            <li class="article-item">
+              <h3>
+                <a href={article.href}>{article.title}</a>
+              </h3>
+              <p class="article-meta">
+                <time datetime={article.date.toISOString()}>
+                  {formatArticleDate(article.date)}
+                </time>
+                <span>{article.contentType === "paper" ? "Paper" : formatArticleType(article.sourceType)}</span>
+                <span>{article.category}</span>
+                <span>{article.subcategory}</span>
+              </p>
+              <p>{article.summary}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <script is:inline>
+    const loadMoreButton = document.querySelector("[data-load-more]");
+    const latestItems = Array.from(document.querySelectorAll("[data-latest-item]"));
+
+    loadMoreButton?.addEventListener("click", () => {
+      const step = Number(loadMoreButton.getAttribute("data-step")) || 5;
+      const hiddenItems = latestItems.filter((item) => item.hidden);
+      hiddenItems.slice(0, step).forEach((item) => {
+        item.hidden = false;
+      });
+
+      if (latestItems.every((item) => !item.hidden)) {
+        loadMoreButton.hidden = true;
+      }
+    });
+  </script>
 </BaseLayout>
