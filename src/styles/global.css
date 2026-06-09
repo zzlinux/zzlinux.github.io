@@ -644,9 +644,11 @@ body.is-post-toc-collapsed {
 
 .prose .markmap-shell {
   position: relative;
+  box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--line);
   border-radius: 0.65rem;
   background: var(--surface);
@@ -656,10 +658,10 @@ body.is-post-toc-collapsed {
 
 .prose .markmap-svg {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: none;
   height: auto;
   cursor: default;
-  overflow: visible;
 }
 
 .prose .markmap-shell:not(.is-rendered)::before {
