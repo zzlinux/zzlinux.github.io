@@ -836,12 +836,17 @@ body.is-post-toc-collapsed {
   }
 
   .post-shell:not(.is-toc-collapsed) .toc-panel {
+    grid-column: 1;
     position: fixed;
     top: 1rem;
     left: max(var(--shell-padding), calc((100vw - 1180px) / 2));
     z-index: 12;
     width: 14rem;
     max-height: calc(100vh - 2rem);
+  }
+
+  .post-shell:not(.is-toc-collapsed) .post-content {
+    grid-column: 2;
   }
 
   .is-toc-collapsed {
