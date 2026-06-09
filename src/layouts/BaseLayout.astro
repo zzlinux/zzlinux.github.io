@@ -96,9 +96,11 @@ const {
         if (shells.length === 0) return;
 
         const namespace = "http://www.w3.org/2000/svg";
-        const xGap = 230;
-        const yGap = 72;
-        const nodeWidth = 180;
+        const xGap = 260;
+        const yGap = 76;
+        const rootWidth = 210;
+        const branchWidth = 132;
+        const leafWidth = 300;
 
         const createSvgElement = (tag, attributes = {}) => {
           const element = document.createElementNS(namespace, tag);
@@ -138,7 +140,13 @@ const {
           return root.children.length === 1 ? root.children[0] : root;
         };
 
-        const wrapText = (text, maxLength = 16) => {
+        const getNodeWidth = (node, depth) => {
+          if (depth === 0) return rootWidth;
+          if (node.children.length > 0) return branchWidth;
+          return leafWidth;
+        };
+
+        const wrapText = (text, maxLength = 18) => {
           const words = text.includes(" ") ? text.split(/\s+/) : Array.from(text);
           const lines = [];
           let current = "";
@@ -165,16 +173,20 @@ const {
           const links = [];
 
           const layout = (node, depth, parent = null) => {
-            const lines = wrapText(node.text, depth === 0 ? 18 : 15);
-            const height = 32 + Math.max(0, lines.length - 1) * 18;
+            const hasChildren = node.children.length > 0;
+            const width = getNodeWidth(node, depth);
+            const lines = wrapText(node.text, depth === 0 ? 18 : hasChildren ? 8 : 22);
+            const height = (depth === 0 ? 48 : hasChildren ? 34 : 30)
+              + Math.max(0, lines.length - 1) * 20;
             const item = {
               ...node,
               depth,
               height,
               lines,
+              width,
               x: depth * xGap,
               y: 0,
-              hasChildren: node.children.length > 0,
+              hasChildren,
             };
 
             visible.push(item);
@@ -205,14 +217,20 @@ const {
           return {
             visible,
             links,
-            width: maxDepth * xGap + nodeWidth + 80,
+            width: maxDepth * xGap + leafWidth + 120,
             height: Math.max(...visible.map((node) => node.y + node.height / 2)) + 32,
           };
         };
 
         const colorForDepth = (depth) => {
-          const colors = ["#8fbdb3", "#d6c08c", "#b99ac7", "#9fb0d0", "#a6c2cc"];
+          const colors = ["#2f6f73", "#5baee8", "#8f7cf5", "#32b99a", "#a78bfa"];
           return colors[depth % colors.length];
+        };
+
+        const branchColor = (node) => {
+          const firstLevel = node.id.split(".")[1] ?? "0";
+          const colors = ["#5baee8", "#8f7cf5", "#32b99a", "#7ab6ff", "#a78bfa", "#d5b76f"];
+          return colors[Number(firstLevel) % colors.length];
         };
 
         const renderTree = (shell, svg, root, collapsed, viewport) => {
@@ -222,39 +240,59 @@ const {
           svg.append(group);
 
           for (const link of layout.links) {
-            const sourceX = link.source.x + nodeWidth;
+            const sourceX = link.source.x + link.source.width;
             const sourceY = link.source.y;
             const targetX = link.target.x;
             const targetY = link.target.y;
             const midX = (sourceX + targetX) / 2;
             group.append(
               createSvgElement("path", {
-                class: "markmap-link",
+                class: `markmap-link depth-${link.target.depth}`,
                 d: `M${sourceX},${sourceY} C${midX},${sourceY} ${midX},${targetY} ${targetX},${targetY}`,
-                stroke: colorForDepth(link.target.depth),
+                stroke: branchColor(link.target),
               }),
             );
           }
 
           for (const node of layout.visible) {
             const nodeGroup = createSvgElement("g", {
-              class: `markmap-node${node.hasChildren ? " has-children" : ""}`,
+              class: [
+                "markmap-node",
+                `depth-${node.depth}`,
+                node.hasChildren ? "has-children" : "is-leaf",
+                collapsed.has(node.id) ? "is-collapsed" : "",
+              ].filter(Boolean).join(" "),
               transform: `translate(${node.x},${node.y - node.height / 2})`,
             });
             nodeGroup.dataset.nodeId = node.id;
 
-            const rect = createSvgElement("rect", {
-              width: nodeWidth,
-              height: node.height,
-              rx: 8,
-              fill: colorForDepth(node.depth),
-            });
-            nodeGroup.append(rect);
+            if (node.depth === 0 || node.hasChildren) {
+              const rect = createSvgElement("rect", {
+                width: node.width,
+                height: node.height,
+                rx: node.depth === 0 ? 9 : 7,
+                fill: node.depth === 0 ? "#1f1f1f" : "#eef7f7",
+                stroke: node.depth === 0 ? "#1f1f1f" : "#4b5563",
+                "stroke-width": node.depth === 0 ? 0 : 1.5,
+              });
+              nodeGroup.append(rect);
+            } else {
+              nodeGroup.append(
+                createSvgElement("line", {
+                  class: "markmap-leaf-stem",
+                  x1: 0,
+                  x2: 48,
+                  y1: node.height / 2,
+                  y2: node.height / 2,
+                  stroke: branchColor(node),
+                }),
+              );
+            }
 
             node.lines.forEach((line, index) => {
               const text = createSvgElement("text", {
-                x: 14,
-                y: 21 + index * 18,
+                x: node.depth === 0 || node.hasChildren ? 14 : 64,
+                y: node.depth === 0 ? 30 + index * 20 : 22 + index * 20,
               });
               text.textContent = line;
               nodeGroup.append(text);
@@ -264,9 +302,9 @@ const {
               const folded = collapsed.has(node.id);
               const toggle = createSvgElement("g", {
                 class: "markmap-toggle",
-                transform: `translate(${nodeWidth - 14},${node.height / 2})`,
+                transform: `translate(${node.width - 10},${node.height / 2})`,
               });
-              toggle.append(createSvgElement("circle", { r: 9 }));
+              toggle.append(createSvgElement("circle", { r: 7 }));
               const toggleText = createSvgElement("text", { y: 4, "text-anchor": "middle" });
               toggleText.textContent = folded ? "+" : "−";
               toggle.append(toggleText);
@@ -296,12 +334,11 @@ const {
           viewport.reset = () => {
             const bounds = shell.getBoundingClientRect();
             viewport.scale = Math.min(
-              (bounds.width - 48) / layout.width,
-              (bounds.height - 48) / layout.height,
-              1.18,
+              (bounds.width - 96) / layout.width,
+              1.05,
             );
-            viewport.x = 24;
-            viewport.y = Math.max(24, (bounds.height - layout.height * viewport.scale) / 2);
+            viewport.x = 42;
+            viewport.y = 52;
             applyTransform();
           };
 
