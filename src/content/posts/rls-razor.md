@@ -38,37 +38,64 @@ paper:
 
 ## 论文脑图
 
-```mermaid
-mindmap
-  root((RL's Razor))
-    问题
-      新任务适应
-      灾难性遗忘
-      SFT 与 RL 的差异
-    方法
-      新任务上的 KL shift
-      Pareto frontier 对比
-      on-policy 机制分析
-      ParityMNIST 受控实验
-    实验
-      Qwen2.5 数学推理
-      Qwen2.5 科学问答
-      Qwen2.5 工具调用
-      OpenVLA 机器人 pick-and-place
-      MNIST 与 FashionMNIST
-    结论
-      RL 在同等新任务性能下更少遗忘
-      forward KL 是强预测变量
-      on-policy 更新偏向 KL-minimal solution
-    局限
-      机制解释仍不完整
-      frontier-scale 模型未验证
-      未系统研究 online off-policy RL
-    复现要点
-      同 prompts 比较 SFT/RL
-      多超参数 sweep
-      Pareto frontier
-      新任务分布上估计 KL
+```markmap
+# RL's Razor
+
+## 问题
+
+### 新任务适应
+
+### 灾难性遗忘
+
+### SFT 与 RL 的差异
+
+## 方法
+
+### 新任务上的 KL shift
+
+### Pareto frontier 对比
+
+### on-policy 机制分析
+
+### ParityMNIST 受控实验
+
+## 实验
+
+### Qwen2.5 数学推理
+
+### Qwen2.5 科学问答
+
+### Qwen2.5 工具调用
+
+### OpenVLA 机器人 pick-and-place
+
+### MNIST 与 FashionMNIST
+
+## 结论
+
+### RL 在同等新任务性能下更少遗忘
+
+### forward KL 是强预测变量
+
+### on-policy 更新偏向 KL-minimal solution
+
+## 局限
+
+### 机制解释仍不完整
+
+### frontier-scale 模型未验证
+
+### 未系统研究 online off-policy RL
+
+## 复现要点
+
+### 同 prompts 比较 SFT/RL
+
+### 多超参数 sweep
+
+### Pareto frontier
+
+### 新任务分布上估计 KL
 ```
 
 ## 研究背景与问题定义

@@ -42,18 +42,31 @@ const {
       </div>
     </footer>
     <script>
-      const prepareMermaidBlocks = () => {
+      // @ts-nocheck
+      const prepareMarkmapBlocks = () => {
         const highlightedBlocks = Array.from(
-          document.querySelectorAll("pre[data-language='mermaid']"),
+          document.querySelectorAll("pre[data-language='markmap']"),
         );
+        const plaintextBlocks = Array.from(
+          document.querySelectorAll("pre[data-language='plaintext']"),
+        ).filter((block) => {
+          const source = block.textContent?.trim() ?? "";
+          const previousHeading = block.previousElementSibling;
+          return (
+            source.startsWith("# ") &&
+            source.includes("\n## ") &&
+            previousHeading instanceof HTMLHeadingElement &&
+            previousHeading.textContent?.trim() === "论文脑图"
+          );
+        });
         const languageBlocks = Array.from(
-          document.querySelectorAll("code.language-mermaid"),
+          document.querySelectorAll("code.language-markmap"),
           (code) => code.closest("pre"),
         ).filter(Boolean);
-        const blocks = [...new Set([...highlightedBlocks, ...languageBlocks])];
+        const blocks = [...new Set([...highlightedBlocks, ...plaintextBlocks, ...languageBlocks])];
 
         for (const block of blocks) {
-          if (!(block instanceof HTMLElement) || block.dataset.mermaidPrepared === "true") {
+          if (!(block instanceof HTMLElement) || block.dataset.markmapPrepared === "true") {
             continue;
           }
 
@@ -61,112 +74,320 @@ const {
           if (!source) continue;
 
           const shell = document.createElement("div");
-          shell.className = "mermaid-shell";
+          shell.className = "markmap-shell";
+          shell.dataset.markmapSource = source;
 
-          const diagram = document.createElement("div");
-          diagram.className = "mermaid";
-          diagram.dataset.mermaidInteractive = "true";
-          diagram.textContent = source;
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.classList.add("markmap-svg");
+          svg.setAttribute("role", "img");
+          svg.setAttribute("aria-label", "论文脑图");
 
-          shell.append(diagram);
-          block.dataset.mermaidPrepared = "true";
+          shell.append(svg);
+          block.dataset.markmapPrepared = "true";
           block.replaceWith(shell);
         }
       };
 
-      const renderMermaid = async () => {
-        prepareMermaidBlocks();
+      const renderMarkmaps = async () => {
+        prepareMarkmapBlocks();
 
-        const diagrams = Array.from(
-          document.querySelectorAll("[data-mermaid-interactive]"),
-        );
+        const shells = Array.from(document.querySelectorAll("[data-markmap-source]"));
 
-        if (diagrams.length === 0) return;
+        if (shells.length === 0) return;
 
-        const [{ default: mermaid }, { default: Panzoom }] = await Promise.all([
-          import("mermaid"),
-          import("@panzoom/panzoom"),
-        ]);
+        const namespace = "http://www.w3.org/2000/svg";
+        const xGap = 230;
+        const yGap = 72;
+        const nodeWidth = 180;
 
-        mermaid.initialize({
-          startOnLoad: false,
-          securityLevel: "loose",
-          theme: "base",
-          themeVariables: {
-            fontFamily:
-              "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-            primaryColor: "#e7f0ee",
-            primaryTextColor: "#1f2933",
-            primaryBorderColor: "#2f6f73",
-            lineColor: "#667085",
-            tertiaryColor: "#faf8f3",
-          },
-        });
+        const createSvgElement = (tag, attributes = {}) => {
+          const element = document.createElementNS(namespace, tag);
+          for (const [key, value] of Object.entries(attributes)) {
+            element.setAttribute(key, String(value));
+          }
+          return element;
+        };
 
-        for (const diagram of diagrams) {
-          if (!(diagram instanceof HTMLElement) || diagram.dataset.rendered === "true") {
+        const parseSource = (source) => {
+          const root = { id: "0", text: "脑图", depth: 0, children: [] };
+          const stack = [root];
+
+          source.split("\n").forEach((line) => {
+            const match = /^(#{1,6})\s+(.+?)\s*$/.exec(line);
+            if (!match) return;
+
+            const depth = match[1].length;
+            const text = match[2].replace(/`/g, "").trim();
+            if (!text) return;
+
+            while (stack.length > 1 && stack[stack.length - 1].depth >= depth) {
+              stack.pop();
+            }
+
+            const parent = stack[stack.length - 1];
+            const node = {
+              id: `${parent.id}.${parent.children.length}`,
+              text,
+              depth,
+              children: [],
+            };
+            parent.children.push(node);
+            stack.push(node);
+          });
+
+          return root.children.length === 1 ? root.children[0] : root;
+        };
+
+        const wrapText = (text, maxLength = 16) => {
+          const words = text.includes(" ") ? text.split(/\s+/) : Array.from(text);
+          const lines = [];
+          let current = "";
+
+          for (const word of words) {
+            const separator = text.includes(" ") && current ? " " : "";
+            const next = `${current}${separator}${word}`;
+            if (next.length > maxLength && current) {
+              lines.push(current);
+              current = word;
+            } else {
+              current = next;
+            }
+          }
+
+          if (current) lines.push(current);
+          return lines.slice(0, 3);
+        };
+
+        const getVisibleLayout = (root, collapsed) => {
+          let cursor = 0;
+          let maxDepth = 0;
+          const visible = [];
+          const links = [];
+
+          const layout = (node, depth, parent = null) => {
+            const lines = wrapText(node.text, depth === 0 ? 18 : 15);
+            const height = 32 + Math.max(0, lines.length - 1) * 18;
+            const item = {
+              ...node,
+              depth,
+              height,
+              lines,
+              x: depth * xGap,
+              y: 0,
+              hasChildren: node.children.length > 0,
+            };
+
+            visible.push(item);
+            maxDepth = Math.max(maxDepth, depth);
+
+            if (parent) links.push({ source: parent, target: item });
+
+            if (item.hasChildren && !collapsed.has(node.id)) {
+              const childItems = node.children.map((child) => layout(child, depth + 1, item));
+              item.y = (childItems[0].y + childItems[childItems.length - 1].y) / 2;
+            } else {
+              item.y = cursor;
+              cursor += yGap;
+            }
+
+            return item;
+          };
+
+          layout(root, 0);
+
+          const minY = Math.min(...visible.map((node) => node.y - node.height / 2));
+          if (minY < 0) {
+            visible.forEach((node) => {
+              node.y -= minY;
+            });
+          }
+
+          return {
+            visible,
+            links,
+            width: maxDepth * xGap + nodeWidth + 80,
+            height: Math.max(...visible.map((node) => node.y + node.height / 2)) + 32,
+          };
+        };
+
+        const colorForDepth = (depth) => {
+          const colors = ["#8fbdb3", "#d6c08c", "#b99ac7", "#9fb0d0", "#a6c2cc"];
+          return colors[depth % colors.length];
+        };
+
+        const renderTree = (shell, svg, root, collapsed, viewport) => {
+          svg.replaceChildren();
+          const layout = getVisibleLayout(root, collapsed);
+          const group = createSvgElement("g", { class: "markmap-viewport" });
+          svg.append(group);
+
+          for (const link of layout.links) {
+            const sourceX = link.source.x + nodeWidth;
+            const sourceY = link.source.y;
+            const targetX = link.target.x;
+            const targetY = link.target.y;
+            const midX = (sourceX + targetX) / 2;
+            group.append(
+              createSvgElement("path", {
+                class: "markmap-link",
+                d: `M${sourceX},${sourceY} C${midX},${sourceY} ${midX},${targetY} ${targetX},${targetY}`,
+                stroke: colorForDepth(link.target.depth),
+              }),
+            );
+          }
+
+          for (const node of layout.visible) {
+            const nodeGroup = createSvgElement("g", {
+              class: `markmap-node${node.hasChildren ? " has-children" : ""}`,
+              transform: `translate(${node.x},${node.y - node.height / 2})`,
+            });
+            nodeGroup.dataset.nodeId = node.id;
+
+            const rect = createSvgElement("rect", {
+              width: nodeWidth,
+              height: node.height,
+              rx: 8,
+              fill: colorForDepth(node.depth),
+            });
+            nodeGroup.append(rect);
+
+            node.lines.forEach((line, index) => {
+              const text = createSvgElement("text", {
+                x: 14,
+                y: 21 + index * 18,
+              });
+              text.textContent = line;
+              nodeGroup.append(text);
+            });
+
+            if (node.hasChildren) {
+              const folded = collapsed.has(node.id);
+              const toggle = createSvgElement("g", {
+                class: "markmap-toggle",
+                transform: `translate(${nodeWidth - 14},${node.height / 2})`,
+              });
+              toggle.append(createSvgElement("circle", { r: 9 }));
+              const toggleText = createSvgElement("text", { y: 4, "text-anchor": "middle" });
+              toggleText.textContent = folded ? "+" : "−";
+              toggle.append(toggleText);
+              nodeGroup.append(toggle);
+            }
+
+            nodeGroup.addEventListener("click", () => {
+              if (!node.hasChildren) return;
+              if (collapsed.has(node.id)) collapsed.delete(node.id);
+              else collapsed.add(node.id);
+              renderTree(shell, svg, root, collapsed, viewport);
+            });
+
+            group.append(nodeGroup);
+          }
+
+          viewport.contentWidth = layout.width;
+          viewport.contentHeight = layout.height;
+
+          const applyTransform = () => {
+            group.setAttribute(
+              "transform",
+              `translate(${viewport.x},${viewport.y}) scale(${viewport.scale})`,
+            );
+          };
+
+          viewport.reset = () => {
+            const bounds = shell.getBoundingClientRect();
+            viewport.scale = Math.min(
+              (bounds.width - 48) / layout.width,
+              (bounds.height - 48) / layout.height,
+              1.18,
+            );
+            viewport.x = 24;
+            viewport.y = Math.max(24, (bounds.height - layout.height * viewport.scale) / 2);
+            applyTransform();
+          };
+
+          viewport.applyTransform = applyTransform;
+          viewport.reset();
+        };
+
+        for (const shell of shells) {
+          if (!(shell instanceof HTMLElement) || shell.dataset.rendered === "true") {
             continue;
           }
 
-          const source = diagram.textContent?.trim();
+          const source = shell.dataset.markmapSource?.trim();
           if (!source) continue;
 
-          const shell = diagram.closest(".mermaid-shell");
-          const id = `mermaid-${Math.random().toString(36).slice(2)}`;
+          const svg = shell.querySelector("svg");
+          if (!(svg instanceof SVGElement)) continue;
 
           try {
-            const { svg } = await mermaid.render(id, source);
-            diagram.innerHTML = svg;
-            diagram.dataset.rendered = "true";
-            shell?.classList.add("is-rendered");
+            const root = parseSource(source);
+            const collapsed = new Set();
+            const viewport = { scale: 1, x: 0, y: 0 };
 
-            const svgElement = diagram.querySelector("svg");
-            if (!(svgElement instanceof SVGElement) || !(shell instanceof HTMLElement)) {
-              continue;
-            }
-
-            svgElement.removeAttribute("height");
-            svgElement.style.width = "100%";
-            svgElement.style.height = "100%";
-
-            const panzoom = Panzoom(svgElement, {
-              contain: "outside",
-              cursor: "grab",
-              maxScale: 4,
-              minScale: 0.45,
-              step: 0.2,
-            });
-
-            shell.addEventListener("wheel", panzoom.zoomWithWheel);
+            shell.dataset.rendered = "true";
+            shell.classList.add("is-rendered");
+            renderTree(shell, svg, root, collapsed, viewport);
 
             const controls = document.createElement("div");
-            controls.className = "mermaid-controls";
+            controls.className = "markmap-controls";
             controls.innerHTML = `
-              <button type="button" data-mermaid-action="zoom-in" aria-label="放大脑图">+</button>
-              <button type="button" data-mermaid-action="zoom-out" aria-label="缩小脑图">−</button>
-              <button type="button" data-mermaid-action="reset" aria-label="重置脑图">重置</button>
+              <button type="button" data-markmap-action="zoom-in" aria-label="放大脑图">+</button>
+              <button type="button" data-markmap-action="zoom-out" aria-label="缩小脑图">−</button>
+              <button type="button" data-markmap-action="reset" aria-label="重置脑图">重置</button>
             `;
 
             controls.addEventListener("click", (event) => {
               const target = event.target;
               if (!(target instanceof HTMLButtonElement)) return;
 
-              const action = target.dataset.mermaidAction;
-              if (action === "zoom-in") panzoom.zoomIn();
-              if (action === "zoom-out") panzoom.zoomOut();
-              if (action === "reset") panzoom.reset();
+              const action = target.dataset.markmapAction;
+              if (action === "zoom-in") viewport.scale *= 1.18;
+              if (action === "zoom-out") viewport.scale /= 1.18;
+              if (action === "reset") viewport.reset?.();
+              viewport.applyTransform?.();
             });
 
             shell.append(controls);
+
+            let dragStart = null;
+            svg.addEventListener("pointerdown", (event) => {
+              dragStart = {
+                pointerId: event.pointerId,
+                x: event.clientX,
+                y: event.clientY,
+                viewportX: viewport.x,
+                viewportY: viewport.y,
+              };
+              svg.setPointerCapture(event.pointerId);
+            });
+
+            svg.addEventListener("pointermove", (event) => {
+              if (!dragStart) return;
+              viewport.x = dragStart.viewportX + event.clientX - dragStart.x;
+              viewport.y = dragStart.viewportY + event.clientY - dragStart.y;
+              viewport.applyTransform?.();
+            });
+
+            svg.addEventListener("pointerup", () => {
+              dragStart = null;
+            });
+
+            svg.addEventListener("wheel", (event) => {
+              event.preventDefault();
+              const factor = event.deltaY > 0 ? 0.92 : 1.08;
+              viewport.scale = Math.min(2.6, Math.max(0.35, viewport.scale * factor));
+              viewport.applyTransform?.();
+            }, { passive: false });
           } catch (error) {
-            diagram.dataset.rendered = "error";
-            shell?.classList.add("has-render-error");
-            console.error("Failed to render Mermaid diagram", error);
+            shell.dataset.rendered = "error";
+            shell.classList.add("has-render-error");
+            console.error("Failed to render Markmap diagram", error);
           }
         }
       };
 
-      renderMermaid();
+      renderMarkmaps();
     </script>
   </body>
 </html>

@@ -22,18 +22,25 @@ function visit(node) {
       child.tagName === "pre" &&
       code?.type === "element" &&
       code.tagName === "code" &&
-      hasClass(code, "language-mermaid")
+      hasClass(code, "language-markmap")
     ) {
       node.children[index] = {
         type: "element",
         tagName: "div",
-        properties: { className: ["mermaid-shell"] },
+        properties: {
+          className: ["markmap-shell"],
+          dataMarkmapSource: textContent(code).trim(),
+        },
         children: [
           {
             type: "element",
-            tagName: "div",
-            properties: { className: ["mermaid"], dataMermaidInteractive: "true" },
-            children: [{ type: "text", value: textContent(code).trim() }],
+            tagName: "svg",
+            properties: {
+              className: ["markmap-svg"],
+              role: "img",
+              ariaLabel: "论文脑图",
+            },
+            children: [],
           },
         ],
       };
@@ -44,6 +51,6 @@ function visit(node) {
   }
 }
 
-export default function rehypeMermaid() {
+export default function rehypeMarkmap() {
   return (tree) => visit(tree);
 }

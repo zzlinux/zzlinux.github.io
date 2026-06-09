@@ -14,8 +14,12 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
+function stripFencedCodeBlocks(markdown: string): string {
+  return markdown.replace(/^```[\s\S]*?^```\s*/gm, "");
+}
+
 export function getMarkdownToc(markdown: string): TocHeading[] {
-  const body = markdown.replace(/^---[\s\S]*?---\s*/, "");
+  const body = stripFencedCodeBlocks(markdown.replace(/^---[\s\S]*?---\s*/, ""));
   const slugger = new GithubSlugger();
   const headings: TocHeading[] = [];
   const headingPattern = /^(#{1,3})\s+(.+)$/gm;
