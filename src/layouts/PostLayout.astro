@@ -43,7 +43,6 @@ const backLabel = contentType === "paper" ? "返回论文表格" : "返回文章
     </aside>
 
     <article class="post-content">
-      <a class="back-link" href={backHref}>{backLabel}</a>
       <header>
         <h1 class="page-title">{title}</h1>
         <p class="article-meta">
@@ -65,6 +64,7 @@ const backLabel = contentType === "paper" ? "返回论文表格" : "返回文章
     </article>
   </div>
 
+  <a class="floating-back-link" href={backHref}>{backLabel}</a>
   <button class="floating-toggle-button post-toc-toggle-button" type="button" data-toc-toggle>
     打开目录
   </button>

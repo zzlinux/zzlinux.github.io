@@ -41,5 +41,132 @@ const {
         Built with Astro and GitHub Pages. 内容由 Markdown、HTML 与 PDF 自动汇总。
       </div>
     </footer>
+    <script>
+      const prepareMermaidBlocks = () => {
+        const highlightedBlocks = Array.from(
+          document.querySelectorAll("pre[data-language='mermaid']"),
+        );
+        const languageBlocks = Array.from(
+          document.querySelectorAll("code.language-mermaid"),
+          (code) => code.closest("pre"),
+        ).filter(Boolean);
+        const blocks = [...new Set([...highlightedBlocks, ...languageBlocks])];
+
+        for (const block of blocks) {
+          if (!(block instanceof HTMLElement) || block.dataset.mermaidPrepared === "true") {
+            continue;
+          }
+
+          const source = block.textContent?.trim();
+          if (!source) continue;
+
+          const shell = document.createElement("div");
+          shell.className = "mermaid-shell";
+
+          const diagram = document.createElement("div");
+          diagram.className = "mermaid";
+          diagram.dataset.mermaidInteractive = "true";
+          diagram.textContent = source;
+
+          shell.append(diagram);
+          block.dataset.mermaidPrepared = "true";
+          block.replaceWith(shell);
+        }
+      };
+
+      const renderMermaid = async () => {
+        prepareMermaidBlocks();
+
+        const diagrams = Array.from(
+          document.querySelectorAll("[data-mermaid-interactive]"),
+        );
+
+        if (diagrams.length === 0) return;
+
+        const [{ default: mermaid }, { default: Panzoom }] = await Promise.all([
+          import("mermaid"),
+          import("@panzoom/panzoom"),
+        ]);
+
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: "loose",
+          theme: "base",
+          themeVariables: {
+            fontFamily:
+              "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+            primaryColor: "#e7f0ee",
+            primaryTextColor: "#1f2933",
+            primaryBorderColor: "#2f6f73",
+            lineColor: "#667085",
+            tertiaryColor: "#faf8f3",
+          },
+        });
+
+        for (const diagram of diagrams) {
+          if (!(diagram instanceof HTMLElement) || diagram.dataset.rendered === "true") {
+            continue;
+          }
+
+          const source = diagram.textContent?.trim();
+          if (!source) continue;
+
+          const shell = diagram.closest(".mermaid-shell");
+          const id = `mermaid-${Math.random().toString(36).slice(2)}`;
+
+          try {
+            const { svg } = await mermaid.render(id, source);
+            diagram.innerHTML = svg;
+            diagram.dataset.rendered = "true";
+            shell?.classList.add("is-rendered");
+
+            const svgElement = diagram.querySelector("svg");
+            if (!(svgElement instanceof SVGElement) || !(shell instanceof HTMLElement)) {
+              continue;
+            }
+
+            svgElement.removeAttribute("height");
+            svgElement.style.width = "100%";
+            svgElement.style.height = "100%";
+
+            const panzoom = Panzoom(svgElement, {
+              contain: "outside",
+              cursor: "grab",
+              maxScale: 4,
+              minScale: 0.45,
+              step: 0.2,
+            });
+
+            shell.addEventListener("wheel", panzoom.zoomWithWheel);
+
+            const controls = document.createElement("div");
+            controls.className = "mermaid-controls";
+            controls.innerHTML = `
+              <button type="button" data-mermaid-action="zoom-in" aria-label="放大脑图">+</button>
+              <button type="button" data-mermaid-action="zoom-out" aria-label="缩小脑图">−</button>
+              <button type="button" data-mermaid-action="reset" aria-label="重置脑图">重置</button>
+            `;
+
+            controls.addEventListener("click", (event) => {
+              const target = event.target;
+              if (!(target instanceof HTMLButtonElement)) return;
+
+              const action = target.dataset.mermaidAction;
+              if (action === "zoom-in") panzoom.zoomIn();
+              if (action === "zoom-out") panzoom.zoomOut();
+              if (action === "reset") panzoom.reset();
+            });
+
+            shell.append(controls);
+          } catch (error) {
+            diagram.dataset.rendered = "error";
+            shell?.classList.add("has-render-error");
+            console.error("Failed to render Mermaid diagram", error);
+          }
+        }
+      };
+
+      renderMermaid();
+    </script>
   </body>
 </html>
