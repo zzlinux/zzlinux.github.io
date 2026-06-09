@@ -8,11 +8,15 @@ const groups = groupContentByCategory(articles);
 ---
 
 <BaseLayout title="Articles | zzlinux">
-  <h1 class="page-title">Articles</h1>
-  <p class="lede">按 category 和 subcategory 自动汇总 Markdown、HTML、PDF 文档。</p>
+  <div class="directory-page-hero">
+    <h1 class="page-title">Articles</h1>
+    <p class="lede">按 category 和 subcategory 自动汇总 Markdown、HTML、PDF 文档。</p>
+  </div>
 
   <section class="section" aria-labelledby="articles-heading">
-    <h2 class="section-label" id="articles-heading">All Articles</h2>
+    <div class="directory-page-section-header">
+      <h2 class="section-label" id="articles-heading">All Articles</h2>
+    </div>
     <ContentDirectory groups={groups} kind="articles" />
   </section>
 </BaseLayout>

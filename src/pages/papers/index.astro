@@ -8,13 +8,17 @@ const groups = groupContentByCategory(papers);
 ---
 
 <BaseLayout title="Papers | zzlinux">
-  <h1 class="page-title">Papers</h1>
-  <p class="lede">
-    论文解读会自动汇总成可排序表格，summary 字段就是一句话总结。
-  </p>
+  <div class="directory-page-hero">
+    <h1 class="page-title">Papers</h1>
+    <p class="lede">
+      论文解读会自动汇总成可排序表格，summary 字段就是一句话总结。
+    </p>
+  </div>
 
   <section class="section" aria-labelledby="papers-heading">
-    <h2 class="section-label" id="papers-heading">Paper Reading</h2>
+    <div class="directory-page-section-header">
+      <h2 class="section-label" id="papers-heading">Paper Reading</h2>
+    </div>
     <ContentDirectory groups={groups} kind="papers" />
   </section>
 </BaseLayout>

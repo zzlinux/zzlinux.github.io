@@ -248,6 +248,11 @@ body.is-post-toc-collapsed {
   margin-top: 1.5rem;
 }
 
+.directory-page-hero,
+.directory-page-section-header {
+  transition: margin-left 0.18s ease;
+}
+
 .directory-grid {
   display: grid;
   gap: 1.5rem;
@@ -835,6 +840,11 @@ body.is-post-toc-collapsed {
 
   .directory-grid {
     grid-template-columns: 13rem minmax(0, 1fr);
+  }
+
+  body:has(.directory-shell:not(.is-sidebar-collapsed)) .directory-page-hero,
+  body:has(.directory-shell:not(.is-sidebar-collapsed)) .directory-page-section-header {
+    margin-left: calc(13rem + 1.5rem);
   }
 
   .directory-shell:not(.is-sidebar-collapsed) .category-sidebar {
