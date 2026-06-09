@@ -96,11 +96,11 @@ const {
         if (shells.length === 0) return;
 
         const namespace = "http://www.w3.org/2000/svg";
-        const xGap = 260;
-        const yGap = 76;
-        const rootWidth = 210;
-        const branchWidth = 132;
-        const leafWidth = 300;
+        const xGap = 176;
+        const yGap = 28;
+        const rootWidth = 132;
+        const branchWidth = 104;
+        const leafWidth = 220;
 
         const createSvgElement = (tag, attributes = {}) => {
           const element = document.createElementNS(namespace, tag);
@@ -175,9 +175,9 @@ const {
           const layout = (node, depth, parent = null) => {
             const hasChildren = node.children.length > 0;
             const width = getNodeWidth(node, depth);
-            const lines = wrapText(node.text, depth === 0 ? 18 : hasChildren ? 8 : 22);
-            const height = (depth === 0 ? 48 : hasChildren ? 34 : 30)
-              + Math.max(0, lines.length - 1) * 20;
+            const lines = wrapText(node.text, depth === 0 ? 14 : hasChildren ? 8 : 22);
+            const height = (depth === 0 ? 34 : hasChildren ? 26 : 22)
+              + Math.max(0, lines.length - 1) * 15;
             const item = {
               ...node,
               depth,
@@ -199,7 +199,7 @@ const {
               item.y = (childItems[0].y + childItems[childItems.length - 1].y) / 2;
             } else {
               item.y = cursor;
-              cursor += yGap;
+              cursor += Math.max(yGap, item.height + 7);
             }
 
             return item;
@@ -217,8 +217,8 @@ const {
           return {
             visible,
             links,
-            width: maxDepth * xGap + leafWidth + 120,
-            height: Math.max(...visible.map((node) => node.y + node.height / 2)) + 32,
+            width: maxDepth * xGap + leafWidth + 24,
+            height: Math.max(...visible.map((node) => node.y + node.height / 2)) + 18,
           };
         };
 
@@ -233,9 +233,12 @@ const {
           return colors[Number(firstLevel) % colors.length];
         };
 
-        const renderTree = (shell, svg, root, collapsed, viewport) => {
+        const renderTree = (shell, svg, root, collapsed) => {
           svg.replaceChildren();
           const layout = getVisibleLayout(root, collapsed);
+          svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
+          svg.setAttribute("width", String(layout.width));
+          svg.setAttribute("height", String(layout.height));
           const group = createSvgElement("g", { class: "markmap-viewport" });
           svg.append(group);
 
@@ -244,11 +247,11 @@ const {
             const sourceY = link.source.y;
             const targetX = link.target.x;
             const targetY = link.target.y;
-            const midX = (sourceX + targetX) / 2;
+            const turnX = sourceX + Math.max(22, (targetX - sourceX) * 0.34);
             group.append(
               createSvgElement("path", {
                 class: `markmap-link depth-${link.target.depth}`,
-                d: `M${sourceX},${sourceY} C${midX},${sourceY} ${midX},${targetY} ${targetX},${targetY}`,
+                d: `M${sourceX},${sourceY} H${turnX} V${targetY} H${targetX}`,
                 stroke: branchColor(link.target),
               }),
             );
@@ -270,7 +273,7 @@ const {
               const rect = createSvgElement("rect", {
                 width: node.width,
                 height: node.height,
-                rx: node.depth === 0 ? 9 : 7,
+                rx: node.depth === 0 ? 6 : 5,
                 fill: node.depth === 0 ? "#1f1f1f" : "#eef7f7",
                 stroke: node.depth === 0 ? "#1f1f1f" : "#4b5563",
                 "stroke-width": node.depth === 0 ? 0 : 1.5,
@@ -281,7 +284,7 @@ const {
                 createSvgElement("line", {
                   class: "markmap-leaf-stem",
                   x1: 0,
-                  x2: 48,
+                  x2: 32,
                   y1: node.height / 2,
                   y2: node.height / 2,
                   stroke: branchColor(node),
@@ -291,8 +294,8 @@ const {
 
             node.lines.forEach((line, index) => {
               const text = createSvgElement("text", {
-                x: node.depth === 0 || node.hasChildren ? 14 : 64,
-                y: node.depth === 0 ? 30 + index * 20 : 22 + index * 20,
+                x: node.depth === 0 || node.hasChildren ? 10 : 50,
+                y: node.depth === 0 ? 22 + index * 15 : node.hasChildren ? 17 + index * 15 : 16 + index * 15,
               });
               text.textContent = line;
               nodeGroup.append(text);
@@ -302,10 +305,10 @@ const {
               const folded = collapsed.has(node.id);
               const toggle = createSvgElement("g", {
                 class: "markmap-toggle",
-                transform: `translate(${node.width - 10},${node.height / 2})`,
+                transform: `translate(${node.width - 8},${node.height / 2})`,
               });
-              toggle.append(createSvgElement("circle", { r: 7 }));
-              const toggleText = createSvgElement("text", { y: 4, "text-anchor": "middle" });
+              toggle.append(createSvgElement("circle", { r: 5 }));
+              const toggleText = createSvgElement("text", { y: 3, "text-anchor": "middle" });
               toggleText.textContent = folded ? "+" : "−";
               toggle.append(toggleText);
               nodeGroup.append(toggle);
@@ -315,35 +318,11 @@ const {
               if (!node.hasChildren) return;
               if (collapsed.has(node.id)) collapsed.delete(node.id);
               else collapsed.add(node.id);
-              renderTree(shell, svg, root, collapsed, viewport);
+              renderTree(shell, svg, root, collapsed);
             });
 
             group.append(nodeGroup);
           }
-
-          viewport.contentWidth = layout.width;
-          viewport.contentHeight = layout.height;
-
-          const applyTransform = () => {
-            group.setAttribute(
-              "transform",
-              `translate(${viewport.x},${viewport.y}) scale(${viewport.scale})`,
-            );
-          };
-
-          viewport.reset = () => {
-            const bounds = shell.getBoundingClientRect();
-            viewport.scale = Math.min(
-              (bounds.width - 96) / layout.width,
-              1.05,
-            );
-            viewport.x = 42;
-            viewport.y = 52;
-            applyTransform();
-          };
-
-          viewport.applyTransform = applyTransform;
-          viewport.reset();
         };
 
         for (const shell of shells) {
@@ -360,62 +339,10 @@ const {
           try {
             const root = parseSource(source);
             const collapsed = new Set();
-            const viewport = { scale: 1, x: 0, y: 0 };
 
             shell.dataset.rendered = "true";
             shell.classList.add("is-rendered");
-            renderTree(shell, svg, root, collapsed, viewport);
-
-            const controls = document.createElement("div");
-            controls.className = "markmap-controls";
-            controls.innerHTML = `
-              <button type="button" data-markmap-action="zoom-in" aria-label="放大脑图">+</button>
-              <button type="button" data-markmap-action="zoom-out" aria-label="缩小脑图">−</button>
-              <button type="button" data-markmap-action="reset" aria-label="重置脑图">重置</button>
-            `;
-
-            controls.addEventListener("click", (event) => {
-              const target = event.target;
-              if (!(target instanceof HTMLButtonElement)) return;
-
-              const action = target.dataset.markmapAction;
-              if (action === "zoom-in") viewport.scale *= 1.18;
-              if (action === "zoom-out") viewport.scale /= 1.18;
-              if (action === "reset") viewport.reset?.();
-              viewport.applyTransform?.();
-            });
-
-            shell.append(controls);
-
-            let dragStart = null;
-            svg.addEventListener("pointerdown", (event) => {
-              dragStart = {
-                pointerId: event.pointerId,
-                x: event.clientX,
-                y: event.clientY,
-                viewportX: viewport.x,
-                viewportY: viewport.y,
-              };
-              svg.setPointerCapture(event.pointerId);
-            });
-
-            svg.addEventListener("pointermove", (event) => {
-              if (!dragStart) return;
-              viewport.x = dragStart.viewportX + event.clientX - dragStart.x;
-              viewport.y = dragStart.viewportY + event.clientY - dragStart.y;
-              viewport.applyTransform?.();
-            });
-
-            svg.addEventListener("pointerup", () => {
-              dragStart = null;
-            });
-
-            svg.addEventListener("wheel", (event) => {
-              event.preventDefault();
-              const factor = event.deltaY > 0 ? 0.92 : 1.08;
-              viewport.scale = Math.min(2.6, Math.max(0.35, viewport.scale * factor));
-              viewport.applyTransform?.();
-            }, { passive: false });
+            renderTree(shell, svg, root, collapsed);
           } catch (error) {
             shell.dataset.rendered = "error";
             shell.classList.add("has-render-error");
