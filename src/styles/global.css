@@ -837,6 +837,20 @@ body.is-post-toc-collapsed {
     grid-template-columns: 13rem minmax(0, 1fr);
   }
 
+  .directory-shell:not(.is-sidebar-collapsed) .category-sidebar {
+    grid-column: 1;
+    position: fixed;
+    top: calc(var(--site-header-height) + 1rem);
+    left: max(var(--shell-padding), calc((100vw - 1180px) / 2));
+    z-index: 12;
+    width: 13rem;
+    max-height: calc(100vh - var(--site-header-height) - 2rem);
+  }
+
+  .directory-shell:not(.is-sidebar-collapsed) .directory-content {
+    grid-column: 2;
+  }
+
   .is-sidebar-collapsed .directory-grid {
     grid-template-columns: minmax(0, 1fr);
   }
