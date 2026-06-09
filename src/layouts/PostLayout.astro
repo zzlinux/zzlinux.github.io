@@ -33,7 +33,7 @@ const backLabel = contentType === "paper" ? "返回论文表格" : "返回文章
         tocHeadings.length > 0 && (
           <nav class="toc-nav" aria-label="文章章节目录">
             {tocHeadings.map((heading) => (
-              <a class={`toc-depth-${heading.depth}`} href={`#${heading.slug}`}>
+              <a class={`toc-depth-${heading.depth}`} href={`#${heading.slug}`} data-toc-link>
                 {heading.text}
               </a>
             ))}
@@ -102,5 +102,51 @@ const backLabel = contentType === "paper" ? "返回论文表格" : "返回文章
     scrollTopButton?.addEventListener("click", () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
+
+    const tocLinks = Array.from(document.querySelectorAll("[data-toc-link]"));
+    const headings = tocLinks
+      .map((link) => {
+        const targetId = decodeURIComponent(link.getAttribute("href")?.slice(1) ?? "");
+        const heading = document.getElementById(targetId);
+        return heading ? { heading, link } : null;
+      })
+      .filter(Boolean);
+
+    if (headings.length > 0) {
+      let activeId = "";
+      const setActiveLink = (id) => {
+        if (!id || activeId === id) return;
+        activeId = id;
+        tocLinks.forEach((link) => {
+          const linkId = decodeURIComponent(link.getAttribute("href")?.slice(1) ?? "");
+          link.classList.toggle("is-active", linkId === id);
+          if (linkId === id) {
+            link.scrollIntoView({ block: "nearest" });
+          }
+        });
+      };
+
+      const updateActiveHeading = () => {
+        const offset = 140;
+        const current = headings
+          .map(({ heading }) => ({
+            id: heading.id,
+            top: heading.getBoundingClientRect().top,
+          }))
+          .filter(({ top }) => top <= offset)
+          .at(-1);
+
+        setActiveLink(current?.id ?? headings[0].heading.id);
+      };
+
+      const observer = new IntersectionObserver(updateActiveHeading, {
+        rootMargin: "-12% 0px -70% 0px",
+        threshold: [0, 1],
+      });
+
+      headings.forEach(({ heading }) => observer.observe(heading));
+      updateActiveHeading();
+      window.addEventListener("scroll", updateActiveHeading, { passive: true });
+    }
   </script>
 </BaseLayout>
