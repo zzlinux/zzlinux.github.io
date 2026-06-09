@@ -248,11 +248,6 @@ body.is-post-toc-collapsed {
   margin-top: 1.5rem;
 }
 
-.directory-page-hero,
-.directory-page-section-header {
-  transition: margin-left 0.18s ease;
-}
-
 .directory-grid {
   display: grid;
   gap: 1.5rem;
