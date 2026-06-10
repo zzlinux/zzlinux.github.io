@@ -9,7 +9,7 @@ interface Props {
 
 const { groups, kind } = Astro.props;
 const isPaperDirectory = kind === "papers";
-const columnCount = isPaperDirectory ? 7 : 5;
+const columnCount = isPaperDirectory ? 6 : 4;
 const totalItems = groups.reduce(
   (count, group) =>
     count + group.subcategories.reduce((sum, subcategory) => sum + subcategory.items.length, 0),
@@ -53,9 +53,6 @@ const totalItems = groups.reduce(
                       )}
                       <th scope="col">
                         <button type="button" data-sort="date">日期</button>
-                      </th>
-                      <th scope="col">
-                        <button type="button" data-sort="category">类目</button>
                       </th>
                       {isPaperDirectory && (
                         <>
@@ -111,7 +108,6 @@ const totalItems = groups.reduce(
                                   {formatArticleDate(item.date)}
                                 </time>
                               </td>
-                              <td>{item.category}</td>
                               {isPaperDirectory && (
                                 <>
                                   <td>{paperMeta?.published ?? "未填写"}</td>
