@@ -1,5 +1,5 @@
 export const siteConfig = {
   // 可选主题: "classic" | "github"
-  theme: "github",
+  theme: "classic",
 } as const;
 
