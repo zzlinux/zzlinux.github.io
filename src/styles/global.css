@@ -21,7 +21,7 @@
   --line: #d0d7de;
   --accent: #0969da;
   --accent-strong: #0550ae;
-  --accent-soft: #ddf4ff;
+  --accent-soft: #f6f8fa;
 }
 
 * {
@@ -63,6 +63,14 @@ a {
 a:hover {
   color: var(--accent-strong);
   text-decoration-color: currentColor;
+}
+
+:root[data-theme="github"] a {
+  text-decoration-line: none;
+}
+
+:root[data-theme="github"] a:hover {
+  text-decoration-line: underline;
 }
 
 .site-shell {
@@ -156,7 +164,17 @@ body.is-post-toc-collapsed {
 
 :root[data-theme="github"] .page-title {
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+}
+
+:root[data-theme="github"] .article-item h2 a,
+:root[data-theme="github"] .article-item h3 a {
+  color: var(--text);
+}
+
+:root[data-theme="github"] .article-item h2 a:hover,
+:root[data-theme="github"] .article-item h3 a:hover {
+  color: var(--accent);
 }
 
 .lede {
@@ -241,6 +259,15 @@ body.is-post-toc-collapsed {
   color: var(--muted);
   font-size: 0.85rem;
   line-height: 1.2;
+}
+
+:root[data-theme="github"] .tag {
+  min-height: 1.65rem;
+  padding: 0.16rem 0.55rem;
+  background: var(--accent-soft);
+  border-color: var(--line);
+  color: var(--muted);
+  font-size: 0.8rem;
 }
 
 .secondary-button,
@@ -355,6 +382,18 @@ body.is-post-toc-collapsed {
   font-weight: 800;
 }
 
+:root[data-theme="github"] .category-sidebar a:hover,
+:root[data-theme="github"] .toc-nav a:hover {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+:root[data-theme="github"] .toc-nav a.is-active {
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 700;
+}
+
 .is-sidebar-collapsed .category-sidebar {
   display: none;
 }
@@ -440,6 +479,15 @@ body.is-post-toc-collapsed {
   text-align: center;
   text-transform: none;
   white-space: normal;
+}
+
+:root[data-theme="github"] .content-table th {
+  background: var(--accent-soft);
+}
+
+:root[data-theme="github"] .content-table .subcategory-row th {
+  background: var(--accent-soft);
+  color: var(--text);
 }
 
 .content-table th button {
@@ -616,6 +664,18 @@ body.is-post-toc-collapsed {
 .floating-back-link:hover {
   background: var(--accent-soft);
   color: var(--accent-strong);
+}
+
+:root[data-theme="github"] .scroll-top-button,
+:root[data-theme="github"] .floating-toggle-button,
+:root[data-theme="github"] .floating-back-link {
+  border-color: var(--line);
+  background: var(--surface);
+  box-shadow: 0 0.55rem 1.4rem rgba(140, 149, 159, 0.18);
+}
+
+:root[data-theme="github"] .floating-back-link:hover {
+  text-decoration-line: none;
 }
 
 .floating-toggle-button:hover {
@@ -851,6 +911,11 @@ body.is-post-toc-collapsed {
   white-space: nowrap;
 }
 
+:root[data-theme="github"] .prose table th {
+  background: var(--accent-soft);
+  color: var(--muted);
+}
+
 .prose table td {
   color: color-mix(in srgb, var(--text) 92%, var(--muted));
 }
@@ -1010,6 +1075,33 @@ body.is-post-toc-collapsed {
 
   .is-toc-collapsed .post-content {
     width: 100%;
+  }
+}
+
+@media (min-width: 640px) {
+  :root[data-theme="github"] .page-title {
+    font-size: 3rem;
+  }
+
+  :root[data-theme="github"] .article-item h2,
+  :root[data-theme="github"] .article-item h3 {
+    font-size: 1.35rem;
+  }
+}
+
+@media (min-width: 900px) {
+  :root[data-theme="github"] .page-title {
+    font-size: 3.25rem;
+  }
+
+  :root[data-theme="github"] body:has(.post-shell) .page-title {
+    font-size: 3rem;
+    line-height: 1.1;
+  }
+
+  :root[data-theme="github"] .article-item h2,
+  :root[data-theme="github"] .article-item h3 {
+    font-size: 1.45rem;
   }
 }
 
