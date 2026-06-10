@@ -671,7 +671,15 @@ body.is-post-toc-collapsed {
 :root[data-theme="github"] .floating-back-link {
   border-color: var(--line);
   background: var(--surface);
+  color: var(--muted);
   box-shadow: 0 0.55rem 1.4rem rgba(140, 149, 159, 0.18);
+}
+
+:root[data-theme="github"] .scroll-top-button:hover,
+:root[data-theme="github"] .floating-toggle-button:hover,
+:root[data-theme="github"] .floating-back-link:hover {
+  background: var(--accent-soft);
+  color: var(--text);
 }
 
 :root[data-theme="github"] .floating-back-link:hover {
