@@ -782,19 +782,34 @@ body.is-post-toc-collapsed {
 }
 
 .prose .katex-display {
-  overflow: visible;
-  padding: 0.25rem 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0 0.45rem;
   white-space: normal;
+  scrollbar-width: thin;
 }
 
 .prose .katex-display > .katex {
-  max-width: 100%;
+  display: inline-block;
+  min-width: max-content;
   white-space: normal;
 }
 
 .prose .katex-display .katex-html {
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+.prose p .katex,
+.prose li .katex,
+.prose td .katex {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  vertical-align: middle;
+  scrollbar-width: thin;
 }
 
 .back-link {
