@@ -108,7 +108,7 @@ paper:
 这里写论文解读正文。
 ```
 
-论文会自动出现在 `/papers/`，表格中会展示标题、meta info、发表时间、会议/期刊、分类、标签和 summary。论文不需要额外写 `paper_name`，`title` 就是论文名；也不需要额外写一句话总结，`summary` 就是该信息。
+论文会自动出现在 `/papers/`，表格中会展示标题、meta info、发表时间、会议/期刊、标签和 summary。论文不需要额外写 `paper_name`，`title` 就是论文名；也不需要额外写一句话总结，`summary` 就是该信息。
 
 ## 添加 HTML 或 PDF 文档
 
@@ -174,6 +174,23 @@ $$
 - Latest、Pinned 内容由内容模型自动生成。
 
 个人介绍和链接已经合并到 `src/pages/about.astro`，顶部导航在 `src/layouts/BaseLayout.astro`。
+
+## 切换博客样式主题
+
+全局主题配置在 `src/site.config.ts`：
+
+```ts
+export const siteConfig = {
+  theme: "github",
+} as const;
+```
+
+当前支持：
+
+- `"github"`：接近 GitHub 页面风格，白底、蓝色链接、灰色边框，整体更清爽简洁。
+- `"classic"`：保留之前的暖色背景和绿色强调色风格。
+
+修改 `theme` 后重新运行 `npm run dev` 或 `npm run build` 即可生效。
 
 ## 后续扩展 Book/Wiki
 
