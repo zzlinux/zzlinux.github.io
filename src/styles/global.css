@@ -392,6 +392,21 @@ body.is-post-toc-collapsed {
   white-space: nowrap;
 }
 
+.content-table .subcategory-row th {
+  width: auto;
+  max-width: none;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--accent-soft) 65%, var(--surface));
+  color: var(--accent-strong);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  padding: 0.38rem 0.5rem;
+  text-align: center;
+  text-transform: none;
+  white-space: normal;
+}
+
 .content-table th button {
   border: 0;
   background: transparent;

@@ -9,6 +9,7 @@ interface Props {
 
 const { groups, kind } = Astro.props;
 const isPaperDirectory = kind === "papers";
+const columnCount = isPaperDirectory ? 7 : 5;
 const totalItems = groups.reduce(
   (count, group) =>
     count + group.subcategories.reduce((sum, subcategory) => sum + subcategory.items.length, 0),
@@ -38,54 +39,48 @@ const totalItems = groups.reduce(
                 <h2 id={`category-heading-${groupIndex}`}>{group.category}</h2>
               </header>
 
-              {group.subcategories.map((subcategory, subcategoryIndex) => (
-                <section
-                  class="subcategory-group"
-                  aria-labelledby={`subcategory-heading-${groupIndex}-${subcategoryIndex}`}
-                >
-                  <h3 id={`subcategory-heading-${groupIndex}-${subcategoryIndex}`}>
-                    {subcategory.subcategory}
-                  </h3>
-                  <div class="table-wrap">
-                    <table class="content-table" data-sort-table>
-                      <thead>
-                        <tr>
+              <div class="table-wrap">
+                <table class="content-table" data-sort-table>
+                  <thead>
+                    <tr>
+                      <th scope="col">
+                        <button type="button" data-sort="title">标题</button>
+                      </th>
+                      {isPaperDirectory && (
+                        <th scope="col">
+                          <button type="button" data-sort="meta">Meta info</button>
+                        </th>
+                      )}
+                      <th scope="col">
+                        <button type="button" data-sort="date">日期</button>
+                      </th>
+                      <th scope="col">
+                        <button type="button" data-sort="category">类目</button>
+                      </th>
+                      {isPaperDirectory && (
+                        <>
                           <th scope="col">
-                            <button type="button" data-sort="title">标题</button>
-                          </th>
-                          {isPaperDirectory && (
-                            <th scope="col">
-                              <button type="button" data-sort="meta">Meta info</button>
-                            </th>
-                          )}
-                          <th scope="col">
-                            <button type="button" data-sort="date">日期</button>
-                          </th>
-                          <th scope="col">
-                            <button type="button" data-sort="category">类目</button>
+                            <button type="button" data-sort="published">发表时间</button>
                           </th>
                           <th scope="col">
-                            <button type="button" data-sort="subcategory">子类目</button>
+                            <button type="button" data-sort="venue">会议/期刊</button>
                           </th>
-                          {isPaperDirectory && (
-                            <>
-                              <th scope="col">
-                                <button type="button" data-sort="published">发表时间</button>
-                              </th>
-                              <th scope="col">
-                                <button type="button" data-sort="venue">会议/期刊</button>
-                              </th>
-                            </>
-                          )}
-                          {!isPaperDirectory && (
-                            <th scope="col">
-                              <button type="button" data-sort="source">类型</button>
-                            </th>
-                          )}
-                          <th scope="col">标签</th>
+                        </>
+                      )}
+                      {!isPaperDirectory && (
+                        <th scope="col">
+                          <button type="button" data-sort="source">类型</button>
+                        </th>
+                      )}
+                      <th scope="col">标签</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.subcategories.map((subcategory) => (
+                      <>
+                        <tr class="subcategory-row" data-subcategory-row>
+                          <th scope="rowgroup" colspan={columnCount}>{subcategory.subcategory}</th>
                         </tr>
-                      </thead>
-                      <tbody>
                         {subcategory.items.map((item) => {
                           const paperMeta = item.paper;
                           const metaInfo = [
@@ -117,7 +112,6 @@ const totalItems = groups.reduce(
                                 </time>
                               </td>
                               <td>{item.category}</td>
-                              <td>{item.subcategory}</td>
                               {isPaperDirectory && (
                                 <>
                                   <td>{paperMeta?.published ?? "未填写"}</td>
@@ -129,11 +123,11 @@ const totalItems = groups.reduce(
                             </tr>
                           );
                         })}
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-              ))}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </section>
           ))}
         </div>
@@ -175,8 +169,7 @@ const totalItems = groups.reduce(
           const direction = previousKey === key && previousDirection === "asc" ? "desc" : "asc";
           const multiplier = direction === "asc" ? 1 : -1;
 
-          const rows = Array.from(tbody.querySelectorAll("tr"));
-          rows.sort((rowA, rowB) => {
+          const compareRows = (rowA, rowB) => {
             const a = rowA.getAttribute(`data-${key}`) || "";
             const b = rowB.getAttribute(`data-${key}`) || "";
 
@@ -185,9 +178,30 @@ const totalItems = groups.reduce(
             }
 
             return a.localeCompare(b, "zh-Hans-CN") * multiplier;
+          };
+
+          const sections = [];
+          let currentSection = null;
+          Array.from(tbody.children).forEach((row) => {
+            if (!(row instanceof HTMLTableRowElement)) return;
+            if (row.hasAttribute("data-subcategory-row")) {
+              currentSection = { header: row, rows: [] };
+              sections.push(currentSection);
+              return;
+            }
+
+            if (!currentSection) {
+              currentSection = { header: null, rows: [] };
+              sections.push(currentSection);
+            }
+
+            currentSection.rows.push(row);
           });
 
-          rows.forEach((row) => tbody.append(row));
+          sections.forEach((section) => {
+            if (section.header) tbody.append(section.header);
+            section.rows.sort(compareRows).forEach((row) => tbody.append(row));
+          });
           table.setAttribute("data-sort-key", key);
           table.setAttribute("data-sort-direction", direction);
         });
