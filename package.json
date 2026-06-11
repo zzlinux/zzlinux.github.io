@@ -15,6 +15,7 @@
     "katex": "^0.17.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
+    "sharp": "^0.35.0",
     "typescript": "^5.6.0"
   },
   "optionalDependencies": {
