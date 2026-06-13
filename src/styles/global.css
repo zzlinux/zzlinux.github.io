@@ -449,7 +449,7 @@ body.is-post-toc-collapsed {
 }
 
 .content-table--papers {
-  min-width: 840px;
+  min-width: 900px;
 }
 
 .content-table th,
@@ -525,29 +525,37 @@ body.is-post-toc-collapsed {
 
 .content-table--papers th:first-child,
 .content-table--papers td:first-child {
-  width: 46%;
+  width: 42%;
 }
 
 .content-table--papers th:nth-child(2),
 .content-table--papers td:nth-child(2) {
-  width: 15%;
-  max-width: 9.5rem;
+  width: 22%;
+  max-width: 13rem;
 }
 
 .content-table--papers th:nth-child(3),
 .content-table--papers td:nth-child(3) {
-  width: 7%;
+  width: 8%;
   max-width: 4.6rem;
 }
 
 .content-table--papers th:nth-child(4),
-.content-table--papers td:nth-child(4),
+.content-table--papers td:nth-child(4) {
+  width: 12%;
+  max-width: 7.5rem;
+}
+
 .content-table--papers th:nth-child(5),
-.content-table--papers td:nth-child(5),
+.content-table--papers td:nth-child(5) {
+  width: 9%;
+  max-width: 6.2rem;
+}
+
 .content-table--papers th:nth-child(6),
 .content-table--papers td:nth-child(6) {
-  width: 8%;
-  max-width: 6.4rem;
+  width: 7%;
+  max-width: 5.5rem;
 }
 
 .meta-cell {
@@ -556,41 +564,47 @@ body.is-post-toc-collapsed {
 
 .meta-stack {
   display: grid;
-  gap: 0.28rem;
+  gap: 0.38rem;
   min-width: 0;
 }
 
 .meta-field {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.35rem;
+  gap: 0.18rem;
   min-width: 0;
 }
 
 .meta-label {
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--background) 72%, var(--surface));
-  color: var(--muted);
+  color: var(--accent-strong);
   font-size: 0.62rem;
   font-weight: 700;
-  line-height: 1;
-  padding: 0.14rem 0.32rem;
+  letter-spacing: 0;
+  line-height: 1.15;
   white-space: nowrap;
 }
 
 .meta-value {
-  display: block;
+  display: -webkit-box;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
   word-break: normal;
 }
 
 :root[data-theme="github"] .meta-label {
-  background: var(--accent-soft);
+  color: var(--muted);
+}
+
+.compact-value {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  word-break: normal;
 }
 
 .content-table tbody tr:last-child td {

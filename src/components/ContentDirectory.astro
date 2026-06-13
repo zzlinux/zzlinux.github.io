@@ -88,6 +88,9 @@ const totalItems = groups.reduce(
                           ]
                             .filter(Boolean)
                             .join(" / ");
+                          const publishedInfo = paperMeta?.published ?? "未填写";
+                          const venueInfo = paperMeta?.venue ?? "未填写";
+                          const tagInfo = item.tags.join(", ") || "无";
 
                           return (
                             <tr
@@ -133,12 +136,18 @@ const totalItems = groups.reduce(
                               </td>
                               {isPaperDirectory && (
                                 <>
-                                  <td>{paperMeta?.published ?? "未填写"}</td>
-                                  <td>{paperMeta?.venue ?? "未填写"}</td>
+                                  <td>
+                                    <span class="compact-value" title={publishedInfo}>{publishedInfo}</span>
+                                  </td>
+                                  <td>
+                                    <span class="compact-value" title={venueInfo}>{venueInfo}</span>
+                                  </td>
                                 </>
                               )}
                               {!isPaperDirectory && <td>{formatArticleType(item.sourceType)}</td>}
-                              <td>{item.tags.join(", ") || "无"}</td>
+                              <td>
+                                <span class="compact-value" title={tagInfo}>{tagInfo}</span>
+                              </td>
                             </tr>
                           );
                         })}
