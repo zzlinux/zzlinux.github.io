@@ -30,6 +30,32 @@ const pinnedItems = getPinnedFallbackItems(content);
     </ul>
   </section>
 
+  {
+    pinnedItems.length > 0 && (
+      <section class="section" aria-labelledby="pinned-heading">
+        <h2 class="section-label" id="pinned-heading">Pinned</h2>
+        <ul class="article-list">
+          {pinnedItems.map((article) => (
+            <li class="article-item">
+              <h3>
+                <a href={article.href}>{article.title}</a>
+              </h3>
+              <p class="article-meta">
+                <time datetime={article.date.toISOString()}>
+                  {formatArticleDate(article.date)}
+                </time>
+                <span>{article.contentType === "paper" ? "Paper" : formatArticleType(article.sourceType)}</span>
+                <span>{article.category}</span>
+                <span>{article.subcategory}</span>
+              </p>
+              <p>{article.summary}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
   <section class="section" aria-labelledby="latest-heading">
     <h2 class="section-label" id="latest-heading">Latest</h2>
     <ul class="article-list" data-latest-list>
@@ -60,32 +86,6 @@ const pinnedItems = getPinnedFallbackItems(content);
       )
     }
   </section>
-
-  {
-    pinnedItems.length > 0 && (
-      <section class="section" aria-labelledby="pinned-heading">
-        <h2 class="section-label" id="pinned-heading">Pinned</h2>
-        <ul class="article-list">
-          {pinnedItems.map((article) => (
-            <li class="article-item">
-              <h3>
-                <a href={article.href}>{article.title}</a>
-              </h3>
-              <p class="article-meta">
-                <time datetime={article.date.toISOString()}>
-                  {formatArticleDate(article.date)}
-                </time>
-                <span>{article.contentType === "paper" ? "Paper" : formatArticleType(article.sourceType)}</span>
-                <span>{article.category}</span>
-                <span>{article.subcategory}</span>
-              </p>
-              <p>{article.summary}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )
-  }
 
   <script is:inline>
     const loadMoreButton = document.querySelector("[data-load-more]");
