@@ -40,7 +40,7 @@ const totalItems = groups.reduce(
               </header>
 
               <div class="table-wrap">
-                <table class="content-table" data-sort-table>
+                <table class:list={["content-table", isPaperDirectory && "content-table--papers"]} data-sort-table>
                   <thead>
                     <tr>
                       <th scope="col">
@@ -48,7 +48,7 @@ const totalItems = groups.reduce(
                       </th>
                       {isPaperDirectory && (
                         <th scope="col">
-                          <button type="button" data-sort="meta">Meta info</button>
+                          <button type="button" data-sort="meta">作者 / 机构</button>
                         </th>
                       )}
                       <th scope="col">
@@ -80,9 +80,11 @@ const totalItems = groups.reduce(
                         </tr>
                         {subcategory.items.map((item) => {
                           const paperMeta = item.paper;
+                          const authorInfo = paperMeta?.authors.join(", ") ?? "";
+                          const institutionInfo = paperMeta?.institutions.join(", ") ?? "";
                           const metaInfo = [
-                            paperMeta?.authors.join(", "),
-                            paperMeta?.institutions.join(", "),
+                            authorInfo,
+                            institutionInfo,
                           ]
                             .filter(Boolean)
                             .join(" / ");
@@ -102,7 +104,28 @@ const totalItems = groups.reduce(
                                 <a href={item.href}>{item.title}</a>
                                 <p>{item.summary}</p>
                               </td>
-                              {isPaperDirectory && <td>{metaInfo || "未填写"}</td>}
+                              {isPaperDirectory && (
+                                <td class="meta-cell">
+                                  {metaInfo ? (
+                                    <div class="meta-stack" aria-label={metaInfo}>
+                                      {authorInfo && (
+                                        <span class="meta-field" title={`作者：${authorInfo}`}>
+                                          <span class="meta-label">作者</span>
+                                          <span class="meta-value">{authorInfo}</span>
+                                        </span>
+                                      )}
+                                      {institutionInfo && (
+                                        <span class="meta-field" title={`机构：${institutionInfo}`}>
+                                          <span class="meta-label">机构</span>
+                                          <span class="meta-value">{institutionInfo}</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    "未填写"
+                                  )}
+                                </td>
+                              )}
                               <td>
                                 <time datetime={item.date.toISOString()}>
                                   {formatArticleDate(item.date)}

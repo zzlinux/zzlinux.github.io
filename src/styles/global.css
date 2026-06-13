@@ -448,6 +448,10 @@ body.is-post-toc-collapsed {
   table-layout: fixed;
 }
 
+.content-table--papers {
+  min-width: 840px;
+}
+
 .content-table th,
 .content-table td {
   border-bottom: 1px solid var(--line);
@@ -517,6 +521,76 @@ body.is-post-toc-collapsed {
 
 .content-table td:not(:first-child) {
   font-size: 0.7rem;
+}
+
+.content-table--papers th:first-child,
+.content-table--papers td:first-child {
+  width: 46%;
+}
+
+.content-table--papers th:nth-child(2),
+.content-table--papers td:nth-child(2) {
+  width: 15%;
+  max-width: 9.5rem;
+}
+
+.content-table--papers th:nth-child(3),
+.content-table--papers td:nth-child(3) {
+  width: 7%;
+  max-width: 4.6rem;
+}
+
+.content-table--papers th:nth-child(4),
+.content-table--papers td:nth-child(4),
+.content-table--papers th:nth-child(5),
+.content-table--papers td:nth-child(5),
+.content-table--papers th:nth-child(6),
+.content-table--papers td:nth-child(6) {
+  width: 8%;
+  max-width: 6.4rem;
+}
+
+.meta-cell {
+  overflow: hidden;
+}
+
+.meta-stack {
+  display: grid;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.meta-field {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.meta-label {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--background) 72%, var(--surface));
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.14rem 0.32rem;
+  white-space: nowrap;
+}
+
+.meta-value {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+}
+
+:root[data-theme="github"] .meta-label {
+  background: var(--accent-soft);
 }
 
 .content-table tbody tr:last-child td {
